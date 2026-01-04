@@ -9,11 +9,11 @@ Dieses Projekt implementiert den Perfect Matching-Algorithmus nach Edmonds, wie 
 ./compile.sh
 ```
 
-Das erzeugt die ausführbare Datei `perfect_matching`.
+Das erzeugt die ausführbare Datei `edmonds.out`.
 
 ### Anwendung
 ```bash
-./perfect_matching <input_file>.dmx
+./edmonds.out <input_file>.dmx
 ```
 
 ### Ein- und Ausgabeformat
