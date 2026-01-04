@@ -2,6 +2,7 @@
 #include <cstdlib>
 
 #include "graph.hpp"
+#include "perfect_matching.hpp"
 
 
 int main(int argc, char** argv)
@@ -14,5 +15,7 @@ int main(int argc, char** argv)
 
    ED::Graph graph = ED::Graph::build_graph(argv[1]);
    std::cout << graph;
+   //ED::Graph matching_graph = GetPerfectMatchingGraph(graph);
+   //std::cout << matching_graph;
    return EXIT_SUCCESS;
 }
