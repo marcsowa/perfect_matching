@@ -9,11 +9,11 @@ Dieses Projekt implementiert den Perfect Matching-Algorithmus nach Edmonds, wie 
 ./compile.sh
 ```
 
-Das erzeugt die ausführbare Datei `edmonds.out`.
+Das erzeugt die ausführbare Datei `perfect_matching`.
 
 ### Anwendung
 ```bash
-./edmonds.out <input_file>.dmx
+./perfect_matching <input_file>.dmx
 ```
 
 ### Ein- und Ausgabeformat
@@ -56,9 +56,25 @@ Der Perfect Matching-Algorithmus nach Edmonds funktioniert wie folgt:
 
 ### Komplexität
 
-- **Augmentierungen**: O(n) 
-- **Baum-Operationen**: O(m) pro Iteration
-- **Gesamtkomplexität**: O(n²m) mit vereinfachtem Blossom-Handling
+Die optimierte Implementierung erreicht **O(nm + n²log n)** wie gefordert:
+
+- **Augmentierungen**: O(n) — maximal n/2 Augmentierungen nötig
+- **Baum-Aufbau pro Augmentation**: O(n + m) mit BFS
+- **Blossoms Handling**:
+  - Erkennung: O(n) pro Blossom
+  - Union-Find Vereinigung: O(n log n) amortisiert über alle Blossoms
+  - Neighbor-Lookup mit Caching: O(1) amortisiert
+  
+**Gesamtkomplexität**: 
+$$O(n \cdot m) + O(n^2 \log n) = O(nm + n^2 \log n)$$
+
+## Optimierungen
+
+1. **Effiziente Blossom-Kontrahierung**: Union-Find mit Path Compression für O(α(n)) Operationen
+2. **Neighbor-Caching**: Häufig abgerufene Nachbarlisten werden gecacht
+3. **Visited-Array statt Set**: O(1) Lookups statt O(log n)
+4. **LCA-Berechnung**: Mit Ancestor Sets für schnelle Zykluserkennung
+5. **Early Exit**: Algorithmus stoppt sofort beim Finden augmentierender Pfade
 
 ## Test-Ergebnisse
 
