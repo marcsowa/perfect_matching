@@ -42,6 +42,10 @@ private:
     RollbackDSU dsu;
     std::unordered_map<NodeId, Blossom> blossoms;
 
+    // Helper for efficient LCA computation when finding blossom base: a per-node visitation mark
+    std::vector<int> lca_vis;
+    int lca_iter;
+
     // Helper methods
     void init_tree(NodeId root);
     bool bfs_augment(NodeId root);

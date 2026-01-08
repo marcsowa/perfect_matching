@@ -14,6 +14,7 @@ using namespace ED;
 struct Blossom {
     NodeId base;                    // closest vertex to tree root
     std::vector<NodeId> cycle;      // vertices of odd cycle
+    std::size_t checkpoint;         // DSU checkpoint before contracting this blossom (for rollback/unshrink)
 };
 
 

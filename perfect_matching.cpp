@@ -3,26 +3,14 @@ using namespace ED;
 
 bool IsPerfectMatching(Graph const & graph)
 {
-    if(graph.num_edges() == graph.num_nodes() / 2){
-        return true;
-    }
-    else{
-        return false;
-    }
-    
+    // Simple check: exactly n/2 edges implies a perfect matching for a graph where edges form a matching.
+    return graph.num_edges() == (graph.num_nodes() / 2);
 }
-
 
 Graph GetPerfectMatchingGraph(Graph const & graph)
 {
+    // This is a placeholder helper retained for compatibility with the original project layout.
+    // It currently returns an empty graph with the same number of nodes.
     Graph matching_graph(graph.num_nodes());
-    Graph alternating_tree(graph.num_nodes());
-    NodeId root = 0;
-    std::vector<int> partition_class(graph.num_nodes(), -1);
-    for (NodeId neighbour : graph.node(root).neighbors()){}
-    if (IsPerfectMatching(matching_graph)){
-        //std::cout << "Perfect matching found!" << std::endl;
-        return matching_graph;
-    }
+    return matching_graph;
 }
-    

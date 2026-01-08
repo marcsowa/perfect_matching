@@ -1,3 +1,5 @@
+#pragma once
+
 #include "graph.hpp"
 using namespace ED;
 
@@ -5,6 +7,10 @@ class M_tree{
     public:
     NodeId root;
 };
-bool IsPerfectMatching(Graph const & graph){}; //checks if the matching is perfect (requieres input to be a matching to work, not just any graph)
-Graph GetPerfectMatchingGraph(Graph const & graph){};
+
+// Returns true if the provided graph represents a perfect matching (i.e., exactly n/2 edges)
+bool IsPerfectMatching(Graph const & graph);
+
+// Placeholder: returns a graph modeling the perfect matching subgraph (if any)
+Graph GetPerfectMatchingGraph(Graph const & graph);
 
