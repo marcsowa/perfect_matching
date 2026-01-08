@@ -31,7 +31,8 @@ public:
    BlossomMatcher(const Graph& graph);
    ~BlossomMatcher();
    
-   // Main algorithm: find perfect matching or return empty if none exists
+   /// @brief Find a maximum matching in the graph.
+   /// @return A vector of matched node pairs representing the perfect matching or empty if none exists.
    std::vector<std::pair<NodeId, NodeId>> find_perfect_matching();
    
 private:
@@ -43,7 +44,7 @@ private:
    
    // Contracted graph information
    std::map<NodeId, std::vector<NodeId>> _contracted_adj;
-   std::map<NodeId, NodeId> _supernode_map;  // Original node -> supernode
+   std::map<NodeId, NodeId> _supernode_map;
    
    // Grow alternating tree from root (returns true if augmenting path found)
    bool grow_alternating_tree();

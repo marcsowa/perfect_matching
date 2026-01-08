@@ -20,7 +20,7 @@ This produces the executable `edmonds.out`.
 
 - Input must be in the DIMACS format for undirected graphs:
   - Lines starting with `c` are comments and ignored.
-  - The problem line has the form `p edge n m` where `n` is the number of vertices and `m` is the number of edges.
+  - The problem line(first line) has the form `p edge n m` where `n` is the number of vertices and `m` is the number of edges.
   - Each edge line has the form `e i j` (1-based vertex indices).
 - Output:
   - If a perfect matching exists, the program prints the DIMACS encoding of the subgraph containing only matching edges (same `p edge n m` header followed by `e i j` lines).

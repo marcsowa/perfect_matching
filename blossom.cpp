@@ -22,23 +22,11 @@ BlossomMatcher::~BlossomMatcher() {
 std::vector<std::pair<NodeId, NodeId>> BlossomMatcher::find_perfect_matching() {
    NodeId n = _graph.num_nodes();
    
-   // Quick infeasibility check: a perfect matching requires an even number of vertices
    if (n % 2 == 1) {
       return {};
    }
 
-   /*
-    High-level algorithm (implementation notes):
-    - Repeatedly attempt to grow an alternating tree from an exposed root to find an augmenting path.
-    - When an augmenting path is found, augment the matching and restart.
-    - If an odd cycle (blossom) is discovered, we contract it to a supernode using Union-Find and continue on the contracted graph.
-    - The outer loop iterates at most O(n) times (each successful augmentation increases matching size),
-      and each tree build visits edges in O(m), yielding the O(nm) part of the complexity.
-    - This function coordinates the iterations and invokes the BFS/tree growth logic.
-   */
-
-   // Main augmentation loop: repeatedly find augmenting paths
-   // Time: O(n) augmentations x O(m) per tree = O(nm)
+   // Main augmentation loop: repeatedly find augmenting paths: O(n) augmentations x O(m) per tree
    bool found_augmentation = true;
    while (found_augmentation) {
       found_augmentation = false;
@@ -52,7 +40,7 @@ std::vector<std::pair<NodeId, NodeId>> BlossomMatcher::find_perfect_matching() {
          }
       }
       
-      // All vertices matched -> perfect matching found
+      // if all vertices are matched 
       if (root == invalid_node_id) {
          return _matching.get_edges();
       }
@@ -99,13 +87,7 @@ std::vector<std::pair<NodeId, NodeId>> BlossomMatcher::find_perfect_matching() {
                      q.push(z);
                   }
                }
-            } else if (_tree->is_even(y) && _tree->get_parent(y) != x) {
-               // Odd cycle (blossom) detected between even nodes x and y.
-               // Note: in this simplified BFS loop we purposely do not perform the full
-               // on-the-fly contraction here to avoid interfering with the current queue
-               // iteration. Blossoms are handled in the more complete grow_alternating_tree
-               // path where shrink_blossom() is explicitly invoked.
-            }
+            } 
          }
       }
       
@@ -115,7 +97,6 @@ std::vector<std::pair<NodeId, NodeId>> BlossomMatcher::find_perfect_matching() {
       }
    }
    
-   // Return final matching
    return _matching.get_edges();
 }
 
@@ -136,7 +117,7 @@ bool BlossomMatcher::grow_alternating_tree() {
          if (!_tree->contains(y)) {
             // y not in tree
             if (_matching.is_exposed(y)) {
-               // Found augmenting path: root -> ... -> x -> y
+               // Found augmenting path
                std::vector<NodeId> path = _tree->get_path_to_root(x);
                path.push_back(y);
                augment_along_path(path);
@@ -149,12 +130,11 @@ bool BlossomMatcher::grow_alternating_tree() {
                q.push(z);
             }
          } else if (_tree->is_even(y)) {
-            // Both x and y are even -> odd cycle detected
-            // Extract cycle path: O(n)
+            // odd cycle detected: O(n)
             std::vector<NodeId> path_x = _tree->get_path_to_root(x);
             std::vector<NodeId> path_y = _tree->get_path_to_root(y);
             
-            // Find LCA: O(n) with optimization
+            // Find LCA: O(n)
             std::set<NodeId> ancestors_x(path_x.begin(), path_x.end());
             NodeId lca = invalid_node_id;
             for (NodeId v : path_y) {
@@ -194,10 +174,7 @@ void BlossomMatcher::augment_along_path(const std::vector<NodeId>& path) {
 }
 
 void BlossomMatcher::shrink_blossom(const std::vector<NodeId>& cycle) {
-   // Create a new supernode id for the blossom. We choose ids that are
-   // distinct from original node ids by offsetting with the current number
-   // of blossoms. The supernode id is purely internal bookkeeping and is
-   // used to map original nodes to their contracted representative.
+   // Create a new supernode id for the blossom
    NodeId supernode = _graph.num_nodes() + _blossoms.size();
    Blossom b;
    b.supernode_id = supernode;
@@ -205,12 +182,10 @@ void BlossomMatcher::shrink_blossom(const std::vector<NodeId>& cycle) {
    b.path = cycle;
    _blossoms.push_back(b);
    
-   // Union all nodes in the cycle into a single contracted component.
-   // This operation uses Union-Find and is efficient amortized.
+   // Union all nodes in the cycle into a single contracted component
    for (NodeId node : cycle) {
       _uf->unite(cycle[0], node);
-      // Remember mapping from original node to the supernode id so we can
-      // reconstruct (unshrink) later.
+      // Remember mapping from original node to the supernode id
       _supernode_map[node] = supernode;
    }
 }
@@ -264,7 +239,7 @@ std::vector<NodeId> BlossomMatcher::get_contracted_neighbors(NodeId node) {
    for (NodeId neighbor : _graph.node(node).neighbors()) {
       // Check if in same contracted component
       if (_uf->find(neighbor) == _uf->find(node)) {
-         continue;  // Skip internal blossom edges
+         continue; 
       }
       neighbors.push_back(neighbor);
    }

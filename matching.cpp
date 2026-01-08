@@ -17,15 +17,9 @@ NodeId Matching::get_mate(NodeId node) const {
 }
 
 void Matching::set_mate(NodeId u, NodeId v) {
-   // Update matching information for edge u-v. We assume that set_mate is
-   // called in contexts that maintain the invariant that edges used for
-   // augmentation connect either two exposed vertices or replace an existing match.
-   // Maintain the match size invariant (_match_size counts number of matched pairs).
+   // Update matching information for edge u-v
    if (is_exposed(u) && is_exposed(v)) {
       _match_size++;
-   } else if (!is_exposed(u) && !is_exposed(v)) {
-      // Both were matched; this branch can occur when reconstructing a matching
-      // after an unshrink operation. We do not change _match_size in that case.
    }
    _mate[u] = v;
    _mate[v] = u;
