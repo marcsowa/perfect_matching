@@ -11,6 +11,11 @@ namespace ED {
 
 /**
    @brief Represents a matching and provides operations for augmentation and validation.
+
+   The Matching class stores pairings between vertices via a _mate array where
+   _mate[u] = v indicates that u and v are matched. An exposed vertex is
+   represented by the sentinel value @c invalid_node_id. The class tracks the
+   number of matched pairs to allow O(1) checks for perfection.
 */
 class Matching {
 public:
@@ -35,9 +40,12 @@ private:
 
 /**
    @brief Represents an alternating tree rooted at an exposed node.
-   Tree nodes are at alternating distances from root:
-   - Even distance: outer nodes (matched via tree edges to odd nodes)
-   - Odd distance: inner nodes (paired in matching M)
+
+   The tree stores for each vertex whether it is in the tree, its parent in the
+   tree, and its depth (distance from the root). Nodes at even depth are outer
+   (candidates to be extended) while nodes at odd depth are inner (already
+   paired in the matching with their parent). The public methods allow adding
+   nodes, querying parity, and retrieving the path from a node to the root.
 */
 class AlternatingTree {
 public:

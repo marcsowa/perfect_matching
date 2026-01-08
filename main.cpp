@@ -6,9 +6,14 @@
 
 int main(int argc, char** argv)
 {
+   // Simple command-line interface:
+   // Usage: ./edmonds.out <input_file>.dmx
+   // The program reads the given DIMACS file, runs Edmonds' algorithm, and
+   // prints either the DIMACS encoding of the matching subgraph or the exact
+   // string "No perfect matching" if none exists.
    if (argc != 2)
    {
-      std::cerr << "Wrong number of arguments. Program call: <program_name> <input_graph>" << std::endl;
+      std::cerr << "Usage: " << argv[0] << " <input_graph>.dmx" << std::endl;
       return EXIT_FAILURE;
    }
 

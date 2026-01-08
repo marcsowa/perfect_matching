@@ -1,24 +1,23 @@
-# Optimierungen für O(nm + n²log n) Komplexität
+# Optimizations for O(nm + n² log n) Complexity
 
-## Übersicht
+## Overview
 
-Die Implementierung wurde systematisch optimiert, um die theoretische Komplexität O(nm + n²log n) zu erreichen:
+This document explains the optimization choices made to achieve the theoretical bound O(nm + n² log n):
 
-$$\text{Gesamtzeit} = \underbrace{O(n \cdot m)}_{\text{Augmentierungen}} + \underbrace{O(n^2 \log n)}_{\text{Blossom-Handling}}$$
+\[ total time = \underbrace{O(n \cdot m)}_{augmentations} + \underbrace{O(n^2 \log n)}_{blossom handling} \]
 
-## Detaillierte Optimierungen
+## Detailed optimizations
 
-### 1. Augmentierungs-Phase: O(nm)
+### 1. Augmentation phase: O(nm)
 
-**Problem**: Naive Implementierung hätte O(n²m) für n augmentations × m per iteration.
+The naive approach may cost O(n² m) overall. Key improvements:
 
-**Lösung**:
-- Maximal **n/2 Augmentierungen** notwendig (jede verdoppelt Matching-Größe)
-- **BFS in O(n+m)** mit Visited-Array statt Set (O(1) Lookups)
-- **Early Exit** sobald augmentierender Pfad gefunden
+- At most n/2 augmentations are required (matching size increases each augmentation).
+- Each BFS to build an alternating tree runs in O(n + m) using arrays for visited flags (O(1) checks).
+- Early exit is used when an augmenting path is found in the BFS.
 
 ```cpp
-// BFS: O(n + m) total
+// BFS: O(n + m)
 while (!q.empty() && !found_augmentation) {
    NodeId x = q.front();
    for (NodeId y : _graph.node(x).neighbors()) {  // O(degree(x))
@@ -27,22 +26,19 @@ while (!q.empty() && !found_augmentation) {
 }
 ```
 
-**Komplexität pro Iteration**: O(m)
-**Gesamtkomplexität Augmentierungen**: O(n) × O(m) = **O(nm)**
+Overall complexity for augmentations: O(n) × O(m) = **O(nm)**
 
 ---
 
-### 2. Blossom-Handling: O(n²log n)
+### 2. Blossom handling: O(n² log n)
 
-**Problem**: Zyklenerkennung und -behandlung ist komplex.
-
-**Lösung**: Union-Find mit Path Compression für effiziente Kontrahierung
+Handling odd cycles (blossoms) efficiently is the main difficulty. We use Union-Find with path compression to support contractions without rebuilding the entire graph.
 
 ```cpp
 class UnionFind {
    NodeId find(NodeId node) const {
       if (_parent[node] != node) {
-         _parent[node] = find(_parent[node]);  // Path compression: O(α(n))
+         _parent[node] = find(_parent[node]);  // Path compression
       }
       return _parent[node];
    }
@@ -50,31 +46,27 @@ class UnionFind {
    void unite(NodeId u, NodeId v) {
       u = find(u);
       v = find(v);
-      // Union by rank: O(log n) amortisiert
+      // Union by rank
    }
 };
 ```
 
-**Komplexität**:
-- **Zyklenerkennung**: O(n) pro Blossom
-- **Union-Operationen**: O(n) × O(log n) amortisiert = O(n log n) über alle Blossoms
-- **Gesamt Blossoms**: O(n²) worst-case, aber typisch O(n)
-- **Gesamt für alle Blossoms**: **O(n² log n)**
+The worst-case accounting leads to **O(n² log n)** for blossom handling, which combined with augmentations yields the target bound.
 
 ---
 
-### 3. Neighbor-Caching: O(1) amortisiert
+### 3. Neighbor caching: O(1) amortized
 
-**Problem**: Nachbarn nach Blossoms-Schrumpfung zu recomputen ist teuer.
+Problem: Recomputing neighbors after blossom shrinking is expensive.
 
-**Lösung**: Cachen von kontrahierten Nachbarlisten
+Solution: Cache contracted neighbor lists
 
 ```cpp
 std::vector<NodeId> get_contracted_neighbors(NodeId node) {
    if (_contracted_adj.count(node) > 0) {
       return _contracted_adj[node];  // O(1)
    }
-   
+
    // Compute once: O(degree(node))
    // Skip internal blossom edges using Union-Find
    for (NodeId neighbor : _graph.node(node).neighbors()) {
@@ -87,27 +79,27 @@ std::vector<NodeId> get_contracted_neighbors(NodeId node) {
 }
 ```
 
-**Amortisierte Komplexität**: O(1) pro Neighbor-Zugriff, O(m) total über alle Edges
+Amortized complexity: O(1) per neighbor-access, O(m) total over all edges
 
 ---
 
-### 4. Visited-Array statt Set: O(1) statt O(log n)
+### 4. Visited array instead of set: O(1) instead of O(log n)
 
-**Vorher**: `std::set<NodeId>` für Tree-Zugehörigkeit → O(log n) pro Check
-**Nachher**: `std::vector<bool>` → **O(1)** pro Check
+Before: `std::set<NodeId>` for tree membership → O(log n) per check
+After: `std::vector<bool>` → **O(1)** per check
 
 ```cpp
 std::vector<bool> visited(n, false);  // O(n) space
 if (!visited[y]) { ... }  // O(1) lookup
 ```
 
-**Einsparung**: O(nm log n) → **O(nm)**
+Savings: reduces O(nm log n) to **O(nm)**
 
 ---
 
-### 5. LCA mit Ancestor Sets: O(n) per Zyklus
+### 5. LCA with ancestor sets: O(n) per cycle
 
-**Lowest Common Ancestor** Berechnung für Blossoms:
+Lowest Common Ancestor (LCA) computation for blossoms:
 
 ```cpp
 std::vector<NodeId> path_x = _tree->get_path_to_root(x);  // O(n)
@@ -122,12 +114,12 @@ for (NodeId v : path_y) {  // O(n)
 }
 ```
 
-**Komplexität pro Zyklus**: O(n log n)
-**Alle Zyklen**: O(n²log n) worst-case, aber O(n log n) typical
+Complexity per cycle: O(n log n)
+All cycles: O(n² log n) worst-case, but O(n log n) typical
 
 ---
 
-### 6. Destruktor für Memory Management
+### 6. Destructor for memory management
 
 ```cpp
 BlossomMatcher::~BlossomMatcher() {
@@ -136,13 +128,13 @@ BlossomMatcher::~BlossomMatcher() {
 }
 ```
 
-Sichert ab, dass keine Memory-Leaks entstehen.
+Ensures that no memory leaks occur.
 
 ---
 
-## Komplexitäts-Analyse zusammengefasst
+## Complexity analysis (summary)
 
-| Operation | Komplexität | Häufigkeit | Gesamt |
+| Operation | Complexity | Frequency | Total |
 |-----------|-----------|-----------|---------|
 | Find augmenting path | O(m) | O(n) | **O(nm)** |
 | Blossom detection | O(n) | O(n²) worst | O(n³) |
@@ -152,23 +144,23 @@ Sichert ab, dass keine Memory-Leaks entstehen.
 
 ---
 
-## Messungen
+## Measurements
 
-Getestete Instanzen (alle bestanden):
-- match800.dmx: 800 nodes, ~3200 edges → instant
-- match2000.dmx: 2000 nodes → instant  
-- match2500.dmx: 2500 nodes → instant
+Tested instances (all passed):
+- match800.dmx: 800 nodes, ~3200 edges — instant
+- match2000.dmx: 2000 nodes — instant
+- match2500.dmx: 2500 nodes — instant
 
-Keine asymptotischen Bottlenecks für größere Instanzen erwartet.
+No asymptotic bottlenecks expected for the provided sizes.
 
 ---
 
-## Vergleich: Vorher vs. Nachher
+## Comparison: Before vs After
 
-| Aspekt | Vorher | Nachher | Verbesserung |
-|--------|--------|---------|-------------|
-| Augmentierungen | O(n) BFS mit Suchstarts | O(n) mit early exit | ~2× schneller |
-| Neighbor-Lookups | O(m × log n) mit Set | O(m) mit Caching | **O(log n)× speedup** |
-| Blossom-Handling | Ignoriert/Vereinfacht | Union-Find O(n²log n) | Korrekt + effizient |
-| Theoretische Komplexität | O(n²m) | **O(nm + n²log n)** | ✓ Ziel erreicht |
+| Aspect | Before | After | Improvement |
+|--------|--------|-------|-------------|
+| Augmentations | O(n) BFS with restarts | O(n) with early exit | ~2× faster |
+| Neighbor lookups | O(m × log n) with sets | O(m) with caching | O(log n) speedup |
+| Blossom handling | Simplified / ignored | Union-Find O(n² log n) | Correct and efficient |
+| Theoretical complexity | O(n² m) | **O(nm + n² log n)** | Goal achieved |
 

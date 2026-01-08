@@ -11,7 +11,10 @@ namespace ED {
 
 /**
    @brief Shrunk supernode representing a blossom (odd cycle).
-   Keeps track of which original nodes are in this blossom.
+
+   A Blossom stores the original node ids that form the odd cycle and a
+   chosen cycle path used during unshrinking to reconstruct the matching in
+   the original graph.
 */
 struct Blossom {
    NodeId supernode_id;

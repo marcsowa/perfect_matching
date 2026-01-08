@@ -39,13 +39,7 @@ Output: Your program should return a perfect matching M in G by writing the
 complete DIMACS encoding of the subgraph (V (G), M ) to the standard output.
 If G contains no perfect matching, you should instead write “No perfect matching”
 to the standard output.
-Programming language: Your program should be written in C++. By default,
-yourprogramwillbecompiledusingg++11.1.0usingC++20. Differentcompilers
-or compiler versions are available upon request. Your program will be compiled
-using -pedantic -Wall -Wextra -Werror, i.e., all warnings are enabled and each
-remaining warning will lead to compilation failure. Program evaluation will be
-performed on Linux. The standard library can be used as you wish. No other
-libraries are allowed. Add a script containing your compile command.
+Programming language: Implement the program in C++ (this repository uses C++20). The included `compile.sh` uses `g++` with `-std=c++20 -pedantic -Wall -Wextra -Werror`; compilation must succeed without warnings. The program will be evaluated on Linux. Use only the standard library (no third-party libraries). Include a script `compile.sh` that contains your compile command.
 Algorithm evaluation: You are expected to implement the algorithm exactly as
 described in the lecture. The runtime requirement will be handled strictly.
 Code evaluation: Running time in practice will also be evaluated, as well as the
@@ -55,8 +49,4 @@ their role clear. Break your complicated functions into small simple ones, break
 your program into a few units etc. Of course, your program should not trigger
 undefined behavior. In particular, your program should be valgrind-clean, i.e. it
 should not leak memory and should not perform invalid operations on memory.
-Help: On the website for the exercise classes you will find a C++ implementation
-of a simple graph class that you can use (if you wish). This implementation also
-includes a parsing routine for the DIMACS format. A few test instances are also
-provided for testing purposes. You may use the Makefile provided with the graph
-class if you like.
+Note: A simple graph class and a DIMACS parser are included in this repository (`graph.hpp` / `graph.cpp`) and can be used as a starting point. A few test instances are available in the `instances/` directory.

@@ -1,5 +1,7 @@
 #include "graph.hpp" // always include corresponding header first
 
+#include <algorithm>
+#include <cctype>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -32,6 +34,7 @@ Graph Graph::build_graph(const std::string & filename)
 
    std::string line;
 
+   // Skip leading comment lines that start with 'c'
    do
    {
       if (!std::getline(ifs, line))
@@ -44,16 +47,25 @@ Graph Graph::build_graph(const std::string & filename)
    int num_nodes = 0;
    int num_edges = 0;
 
+   // Expect a problem line of the form: p edge n m
    if (line[0] == 'p')
    {
       std::stringstream stream;
       stream << line;
-      std::string str;
-      stream >> str >> str >> num_nodes >> num_edges;
+      std::string tag1, tag2;
+      stream >> tag1 >> tag2 >> num_nodes >> num_edges;
+      // Accept "edge" in any case (DIMACS files sometimes use uppercase)
+      std::transform(tag2.begin(), tag2.end(), tag2.begin(), [](unsigned char c){ return std::tolower(c); });
+      if (tag2 != "edge") {
+         throw std::runtime_error(std::string("Unsupported problem type in DIMACS stream (expected 'edge'). Found: '") + tag2 + "'");
+      }
+      if (num_nodes < 0 || num_edges < 0) {
+         throw std::runtime_error("Invalid node/edge counts in DIMACS problem line.");
+      }
    }
    else
    {
-      throw std::runtime_error("Unexpected format of input file.");
+      throw std::runtime_error("Unexpected format of input file: missing problem line.");
    }
 
    Graph graph(num_nodes);
@@ -88,7 +100,7 @@ void Graph::add_edge(NodeId node1_id, NodeId node2_id)
       throw std::runtime_error("ED::Graph class does not support loops!");
    }
 
-   // minimum redundancy :-), maybe a bit overkill...
+   // Helper lambda: add b as a neighbor of a (used to add both directions)
    auto impl = [this](NodeId a, NodeId b)
    {
       Node & node = _nodes.at(a);

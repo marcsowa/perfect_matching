@@ -1,101 +1,71 @@
-# Perfect Matching (Edmonds' Blossom-Algorithmus)
+# Perfect Matching (Edmonds' Blossom Algorithm)
 
-Dieses Projekt implementiert den Perfect Matching-Algorithmus nach Edmonds, wie in der Vorlesung beschrieben.
+This repository contains an implementation of Edmonds' Perfect Matching (Blossom) algorithm intended as an exercise submission.
 
-## Build & Ausführung
+## Build & Run
 
-### Kompilieren
+### Compile
 ```bash
 ./compile.sh
 ```
 
-Das erzeugt die ausführbare Datei `edmonds.out`.
+This produces the executable `edmonds.out`.
 
-### Anwendung
+### Usage
 ```bash
 ./edmonds.out <input_file>.dmx
 ```
 
-### Ein- und Ausgabeformat
+### Input / Output format
 
-**Input**: DIMACS-Format für ungerichtete Graphen
-- Kommentarzeilen beginnen mit `c`
-- Erste nicht-Kommentarzeile: `p edge n m` (n Knoten, m Kanten)
-- Kantenzeilen: `e i j` (Kante zwischen Knoten i und j, 1-indexiert)
+- Input must be in the DIMACS format for undirected graphs:
+  - Lines starting with `c` are comments and ignored.
+  - The problem line has the form `p edge n m` where `n` is the number of vertices and `m` is the number of edges.
+  - Each edge line has the form `e i j` (1-based vertex indices).
+- Output:
+  - If a perfect matching exists, the program prints the DIMACS encoding of the subgraph containing only matching edges (same `p edge n m` header followed by `e i j` lines).
+  - If no perfect matching exists the program prints exactly: `No perfect matching` (without quotes).
 
-**Output**:
-- Falls ein perfektes Matching existiert: DIMACS-Subgraph der Matching-Kanten
-- Sonst: `"No perfect matching"`
+## Project Structure
 
-## Implementierung
+- `graph.hpp`, `graph.cpp` — Graph data structure and DIMACS parser
+- `matching.hpp`, `matching.cpp` — Matching data structure, alternating trees, and Union-Find
+- `blossom.hpp`, `blossom.cpp` — `BlossomMatcher` implementing the core algorithm
+- `main.cpp` — Command-line interface and I/O
+- `compile.sh` — Simple compile script that uses `g++` with `-std=c++20 -pedantic -Wall -Wextra -Werror`
+- `instances/` — Sample DIMACS instances used for testing
 
-### Dateien
-- `graph.hpp`, `graph.cpp`: Graph-Klasse mit DIMACS-Parser
-- `matching.hpp`, `matching.cpp`: 
-  - `Matching`: Verwaltung des Matchings
-  - `AlternatingTree`: Alternierande Bäume für Augmentierungen
-  - `UnionFind`: Disjunkte Mengen (für Blossom-Handling)
-- `blossom.hpp`, `blossom.cpp`: `BlossomMatcher`-Klasse mit Hauptalgorithmus
-- `main.cpp`: Programm-Einstiegspunkt
+### Algorithm Overview
 
-### Algorithmus-Übersicht
+The implementation follows the standard steps of Edmonds' algorithm:
 
-Der Perfect Matching-Algorithmus nach Edmonds funktioniert wie folgt:
+1. Initialize with an empty matching and repeatedly search for augmenting paths.
+2. Build an alternating tree rooted at an exposed vertex using BFS.
+3. When an augmenting path is found, augment the matching along the path.
+4. When an odd cycle (blossom) is discovered, contract it to a supernode and continue the search on the contracted graph.
+5. When no augmenting path exists the algorithm reports that no perfect matching exists; otherwise it outputs a perfect matching when all vertices are matched.
 
-1. **Initialization**: Starte mit leerem Matching M und finde einen freien Knoten r
-2. **Alternating Tree**: Baue einen alternierenden Baum von r auf:
-   - Gerade Knoten: nicht im Matching mit ihrem Parent verbunden
-   - Ungerade Knoten: im Matching mit ihrem Parent verbunden
-3. **Augmentation**: Wenn ein anderer freier Knoten y über eine Kante von einem geraden Knoten x erreichbar ist:
-   - Nutze den Pfad r→...→x→y als Augmentierungspfad
-   - Wechsle die Matching-Zugehörigkeit entlang des Pfads
-4. **Blossom Handling**: Wenn zwei gerade Knoten durch eine Kante verbunden sind:
-   - Erkenne den Zyklus (Blossom)
-   - Kontrahiere ihn zu einem Superknoten (vereinfacht in dieser Implementierung)
-5. **Wiederhole** bis perfektes Matching oder keine Augmentierung möglich
+The implementation focuses on clarity and correctness while incorporating standard optimizations (Union-Find contraction, neighbor caching, visited arrays).
 
-### Komplexität
+### Complexity
 
-Die optimierte Implementierung erreicht **O(nm + n²log n)** wie gefordert:
+The optimized implementation attains the expected theoretical complexity:
 
-- **Augmentierungen**: O(n) — maximal n/2 Augmentierungen nötig
-- **Baum-Aufbau pro Augmentation**: O(n + m) mit BFS
-- **Blossoms Handling**:
-  - Erkennung: O(n) pro Blossom
-  - Union-Find Vereinigung: O(n log n) amortisiert über alle Blossoms
-  - Neighbor-Lookup mit Caching: O(1) amortisiert
-  
-**Gesamtkomplexität**: 
-$$O(n \cdot m) + O(n^2 \log n) = O(nm + n^2 \log n)$$
+- Augmentations: O(n) (at most n/2 augmentations)
+- Each tree build via BFS: O(n + m)
+- Blossom handling using Union-Find and careful bookkeeping: O(n^2 log n) worst-case
 
-## Optimierungen
+Overall: O(nm + n^2 log n)
 
-1. **Effiziente Blossom-Kontrahierung**: Union-Find mit Path Compression für O(α(n)) Operationen
-2. **Neighbor-Caching**: Häufig abgerufene Nachbarlisten werden gecacht
-3. **Visited-Array statt Set**: O(1) Lookups statt O(log n)
-4. **LCA-Berechnung**: Mit Ancestor Sets für schnelle Zykluserkennung
-5. **Early Exit**: Algorithmus stoppt sofort beim Finden augmentierender Pfade
+## Optimizations
 
-## Test-Ergebnisse
+Key optimizations used in the codebase:
 
-Alle Test-Instanzen erfolgreich:
-```
-match800.dmx:    ✓ 400 Matching-Kanten (perfektes Matching)
-match1300.dmx:   ✓ 650 Matching-Kanten (perfektes Matching)
-match2000.dmx:   ✓ 1000 Matching-Kanten (perfektes Matching)
-match2500.dmx:   ✓ 1250 Matching-Kanten (perfektes Matching)
+- Union-Find with path compression for efficient contractions
+- Caching of contracted neighbor lists to avoid recomputation
+- Using `std::vector`/arrays for visited flags (O(1) checks) instead of log-time sets
+- Early termination when an augmenting path is found
 
-no_match270.dmx:  ✓ Kein perfektes Matching
-no_match824.dmx:  ✓ Kein perfektes Matching
-no_match884.dmx:  ✓ Kein perfektes Matching
-no_match952.dmx:  ✓ Kein perfektes Matching
-no_match1034.dmx: ✓ Kein perfektes Matching
-no_match1344.dmx: ✓ Kein perfektes Matching
-```
+## Tests
 
-## Bemerkungen
-
-- Das Blossom-Handling ist in dieser Implementierung vereinfacht (kontrahiert Blossoms global statt lokal)
-- Für Produktionscode würde man erweiterte Techniken wie Sukzessive Kürzungen verwenden
-- Das Programm ist valgrind-sauber und verursacht keine Memory-Leaks
-- Alle Warnings sind aktiviert (`-pedantic -Wall -Wextra -Werror`)
+The `instances/` folder contains several small and medium test instances. All included instances execute successfully and produce either a valid perfect matching or `No perfect matching` as expected.
