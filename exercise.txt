@@ -1,0 +1,62 @@
+Algorithm 2: Perfect Matching
+Input: A graph 𝐺= (𝑉,𝐸)
+Output: A perfect matching 𝑀in 𝐺if it exists.
+1   𝐺′ := 𝐺, 𝑀 := ∅, 𝑇 := ({𝑟},∅) for some 𝑟 ∈ 𝑉(𝐺′)
+2   while ∃{𝑥,𝑦} ∈ 𝐸(𝐺′) with 𝑥 ∈ Even(𝑇) and 𝑦∉ 𝑂𝑑𝑑(𝑇) do
+3       if 𝑦∉ 𝑉(𝑇) and 𝑦is 𝑀-exposed then
+4           use {𝑥,𝑦} and 𝑟-𝑥-path in 𝑇 to augment 𝑀
+5           let 𝑀′ be the matching in 𝐺 obtained by unshrinking 𝑀
+6           if 𝑀′ is perfect
+7               then return (𝑀′)
+8           else 𝐺′ := 𝐺, 𝑀 := 𝑀′, 𝑇 := ({𝑟},∅) for some 𝑀-exposed 𝑟 ∈ 𝑉(𝐺′)
+9       else if 𝑦∉ 𝑉(𝑇) and 𝑦is covered by an edge {𝑦,𝑧} ∈ 𝑀 then
+10          add 𝑦,𝑧,{𝑥,𝑦} and {𝑦,𝑧} to 𝑇
+11      else
+12          use {𝑥,𝑦} to shrink an odd circuit and update 𝐺′, 𝑀, and 𝑇
+13  return (’𝐺 has no perfect matching’)
+
+Thm: Algorithm Perfect Matching correctly determines whether the input graph contains a perfect matching. It terminates after 𝑂(𝑛) augmentations, 𝑂(𝑛2) shrinking steps, and 𝑂(𝑛2) tree extension steps.
+Thm: Algorithm Perfect Matching can be implemented to runin 𝑂(𝑛𝑚+ 𝑛2log 𝑛)
+
+Exercise 1.1. Task: Implement the Perfect Matching algorithm exactly as
+described in the lecture.
+Usage: Your program should be called as follows:
+program_name file1.dmx
+Input: The argument, file1.dmx, is mandatory (i.e., your program should exit
+with an error message if it is not present), and it encodes the graph G for which
+your program should find a perfect matching.
+File file1.dmx is expected to be in DIMACS format, which is used to encode
+undirected graphs as follows: All lines beginning with a c are comments. Now,
+ignoring any comment-lines, to encode a graph G, the first line has the format
+p edge n m
+where n = |V (G)| and m = |E(G)|. From this, V (G) is implicitly identified with
+{1, . . . , n}. Note that vertex indices start with 1 in the DIMACS format. The
+following m lines have the format
+e i j
+representing that {i, j} ∈ E(G). If the given file does not match the described
+format your program should exit with an error message.
+Output: Your program should return a perfect matching M in G by writing the
+complete DIMACS encoding of the subgraph (V (G), M ) to the standard output.
+If G contains no perfect matching, you should instead write “No perfect matching”
+to the standard output.
+Programming language: Your program should be written in C++. By default,
+yourprogramwillbecompiledusingg++11.1.0usingC++20. Differentcompilers
+or compiler versions are available upon request. Your program will be compiled
+using -pedantic -Wall -Wextra -Werror, i.e., all warnings are enabled and each
+remaining warning will lead to compilation failure. Program evaluation will be
+performed on Linux. The standard library can be used as you wish. No other
+libraries are allowed. Add a script containing your compile command.
+Algorithm evaluation: You are expected to implement the algorithm exactly as
+described in the lecture. The runtime requirement will be handled strictly.
+Code evaluation: Running time in practice will also be evaluated, as well as the
+elegance, cleanness and organization of your code. Make sure to add good docu-
+mentation and give the variables, functions and types meaningful names that make
+their role clear. Break your complicated functions into small simple ones, break
+your program into a few units etc. Of course, your program should not trigger
+undefined behavior. In particular, your program should be valgrind-clean, i.e. it
+should not leak memory and should not perform invalid operations on memory.
+Help: On the website for the exercise classes you will find a C++ implementation
+of a simple graph class that you can use (if you wish). This implementation also
+includes a parsing routine for the DIMACS format. A few test instances are also
+provided for testing purposes. You may use the Makefile provided with the graph
+class if you like.
